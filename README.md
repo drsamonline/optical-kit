@@ -1,5 +1,9 @@
 # optical-kit
 
+[![live](https://img.shields.io/badge/live-online-22c55e)](https://drsamonline.github.io/optical-kit/)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+
 **The shared optical-transfer core for drsamonline apps.** One file, no build
 step, no dependencies.
 
