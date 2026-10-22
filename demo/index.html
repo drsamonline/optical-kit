@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>optical-kit — round-trip test</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--mut:#9aa3b2;--line:#252a34;--ok:#22c55e;--bad:#ef4444}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header,main,footer{max-width:760px;margin:0 auto;padding:20px}
+  pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;white-space:pre-wrap}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .mut{color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>optical-kit — round-trip test</h1>
+  <p class="mut">Encode random data, drop frames, decode, and compare. Runs entirely in this page.</p>
+</header>
+<main>
+  <pre id="out">Running…</pre>
+</main>
+<footer class="mut">© 2026 Dr Sohil Momin</footer>
+<script src="../optical-kit.js"></script>
+<script>
+  var out = [], pass = 0, fail = 0;
+  function rand(n){ var a=new Uint8Array(n); for(var i=0;i<n;i++) a[i]=(i*2654435761)%256; return a; }
+  function run(bytes, bs, loss){
+    var data = rand(bytes);
+    var s = Optical.Sender(data, { blockSize: bs, session: 1234 });
+    var rx = Optical.Receiver(s.session, s.k, s.blockSize, data.length);
+    var sent = 0, acc = 0;
+    while (rx.progress() < 1 && sent < s.k * 6) {
+      var f = s.next(); sent++;
+      if (loss && Math.random() < loss) continue;
+      if (rx.add(f) !== null) acc++;
+    }
+    var o = rx.result();
+    var same = !!o && o.length === data.length;
+    for (var i = 0; same && i < data.length; i++) if (o[i] !== data[i]) same = false;
+    return { ok: same, k: s.k, sent: sent, acc: acc };
+  }
+  var cases = [[4096,1400,0],[51200,1400,0.10],[51200,1400,0.30],[204800,2000,0.15]];
+  cases.forEach(function(c){
+    var r = run(c[0], c[1], c[2]);
+    var label = c[0] + "B block=" + c[1] + " loss=" + Math.round(c[2]*100) + "%";
+    if (r.ok) { pass++; out.push("PASS  " + label + "  k=" + r.k + " frames=" + r.sent + " overhead=" + (r.acc/r.k).toFixed(2) + "x"); }
+    else { fail++; out.push("FAIL  " + label); }
+  });
+  document.getElementById("out").textContent = out.join("\n") + "\n\n" + pass + " passed, " + fail + " failed";
+</script>
+</body>
+</html>

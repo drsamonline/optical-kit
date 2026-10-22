@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>optical-kit — the shared optical-transfer core</title>
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--ink:#e7e9ee;--mut:#9aa3b2;--line:#252a34;--acc:#22c55e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header,main,footer{max-width:760px;margin:0 auto;padding:24px 20px}
+  h1{margin:0 0 6px;font-size:24px}
+  .mut{color:var(--mut)}
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin:18px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .card h3{margin:0 0 4px;font-size:14px}
+  .card p{margin:0;color:var(--mut);font-size:13px}
+  a{color:#7dd3fc}
+  .btn{display:inline-block;background:var(--acc);color:#06210f;text-decoration:none;font-weight:600;border-radius:10px;padding:10px 14px;margin:4px 4px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>optical-kit</h1>
+  <p class="mut">The shared optical-transfer core: a systematic LT fountain code, self-describing frames, and a pluggable codec. One file, no dependencies. MIT.</p>
+  <p><a class="btn" href="./demo/">Run the round-trip test</a> <a class="btn" href="https://github.com/drsamonline/optical-kit">Source</a></p>
+</header>
+<main>
+  <div class="grid">
+    <div class="card"><h3>Fountain code</h3><p>Any ~k frames reconstruct the file. Dropped frames cost time, not correctness.</p></div>
+    <div class="card"><h3>Self-describing frames</h3><p>Session, sequence, block count, length and CRC — a receiver can join mid-stream.</p></div>
+    <div class="card"><h3>Sender &amp; receiver</h3><p>With progress, so the UI can show frames collected.</p></div>
+    <div class="card"><h3>Pluggable codec</h3><p>Bring your own QR or colour-matrix renderer; the kit moves the bytes.</p></div>
+  </div>
+  <p class="mut">Verified: round-trips with up to ~47% frame loss at 1.0–1.5× overhead (see the test).</p>
+</main>
+<footer class="mut">Built with optical-kit · © 2026 Dr Sohil Momin · Part of the Forge system</footer>
+</body>
+</html>
