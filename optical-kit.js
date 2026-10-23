@@ -1,3 +1,4 @@
+/* global module, btoa, atob */
 /* optical-kit — the shared optical-transfer core for drsamonline apps.
  *
  * One file, no build step, no dependencies. It provides the *transport* layer
