@@ -1,5 +1,7 @@
 # optical-kit
 
+[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-2e7d32)](LICENSE)
+
 [![test](https://github.com/drsamonline/optical-kit/actions/workflows/test.yml/badge.svg)](https://github.com/drsamonline/optical-kit/actions/workflows/test.yml)
 
 
