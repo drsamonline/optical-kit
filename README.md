@@ -1,98 +1,34 @@
-# optical-kit
+# optical-kit — merged into frame-kit
 
-[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-2e7d32)](LICENSE)
+**This kit is no longer maintained on its own.** On 2026-11-12 its fountain code, its decoder
+and its sender/receiver were folded into **[frame-kit](https://github.com/drsamonline/frame-kit)**
+as version 2.0.0.
 
-[![test](https://github.com/drsamonline/optical-kit/actions/workflows/test.yml/badge.svg)](https://github.com/drsamonline/optical-kit/actions/workflows/test.yml)
+## Why
 
+`frame-kit` wrapped bytes and `optical-kit` moved them, and both described "self-describing
+frames" — two formats (22-byte and 17-byte), two CRCs, two decoders, used by the same three
+apps: `helioprism`, `blinkcode-ai`, `BLINKTRANSFER`. Two definitions of one thing drift; this
+one had, and `frame-kit`'s default decoder could only peel a stream whose sender used session
+`1`.
 
-**The shared optical-transfer core for drsamonline apps.** One file, no build
-step, no dependencies.
-
-This is the transport logic behind the transfer apps (`helioprism`,
-`blinkcode-ai`, `BLINKTRANSFER`), extracted once so it isn't re-implemented three
-times:
-
-- a **systematic LT fountain code** — the receiver needs *any* ~k frames, so a
-  dropped frame costs time, never correctness (there is no back-channel to ask
-  for a resend);
-- **self-describing frames** — session, sequence, block count, block size, total
-  length, and a CRC, so a receiver can lock onto a stream mid-flight;
-- a **sender** and a **receiver** with progress;
-- a **pluggable codec** — the app supplies the QR or colour-matrix renderer.
-
-## Why a fountain code
-
-A screen-to-camera (or speaker-to-mic) link has no way to ask for a retransmit,
-and a camera *will* drop frames. Numbered frames then need the receiver to catch
-every one — a coupon-collector problem. A fountain code needs only *enough*
-frames, in any order, so a loss costs a little time and nothing else.
-
-## API
+## What to use instead
 
 ```js
-// send
-const sender = Optical.Sender(dataBytes, { blockSize: 1400 });
-sender.session; sender.k;                 // tell the receiver these first
-const frame = sender.next();              // a Uint8Array; render it as a QR / matrix
+const Frame = require("frame-kit.js");
 
-// receive
-const rx = Optical.Receiver(session, k, blockSize, totalLen);
-rx.add(frameBytes);                       // returns progress 0..1
-rx.progress();                            // 0..1
-rx.result();                              // Uint8Array, or null until complete
+const tx = Frame.Sender(bytes, { blockSize: 1400 });   // tx.next() → frame bytes
+const rx = Frame.Receiver();                            // rx.add(frame) → { fresh, complete }
+const out = rx.payload();                               // checksum verified
 ```
 
-Lower-level pieces: `Optical.Fountain` (encode/symbol), `Optical.Decoder`
-(peeling), `Optical.Frame` (pack/unpack), `Optical.crc32`, `Optical.bytes`
-(text/base64).
-
-## Verified
-
-`test-node.js` proves the round-trip, including dropped frames:
-
-```
-node test-node.js
-PASS  1024B block=1400 loss=0%   k=1   overhead=1.00x
-PASS  51200B block=1400 loss=0%  k=37  overhead=1.00x
-PASS  51200B block=1400 loss=10% k=37  overhead=1.11x
-PASS  51200B block=1400 loss=30% k=37  overhead=1.46x
-PASS  204800B block=2000 loss=10% k=103 overhead=1.20x
-PASS  524288B block=2000 loss=20% k=263 overhead=1.47x
-PASS  10240B block=800 loss=15%  k=13  overhead=1.00x
-7 passed, 0 failed
-```
-
-The browser demo (`demo/index.html`) runs the same round-trip in-page.
-
-## Pluggable codec
-
-`optical-kit` moves bytes; it does not draw them. The app renders each frame with
-its own codec:
-
-- **QR** — e.g. `zxing-wasm` / `jsQR`, one frame per code;
-- **colour matrix** — a dense grid of colour cells;
-- **multi-code grid** — several codes per displayed frame.
-
-## Support
-
-<img src="docs/assets/support-portrait.jpg" width="72" height="72" alt="Dr. Sohil Momin" align="left" style="border-radius:50%;margin-right:1rem">
-
-Free, offline, accountless — and staying that way. If it earned its keep:
-
-| | |
+| Old | New |
 |---|---|
-| UPI (India) | `drsohilboi@ybl` — payee Dr. Sohil Momin, open amount, or scan [the QR](docs/assets/upi-qr.svg) |
-| GitHub Sponsors | [github.com/sponsors/drsamonline](https://github.com/sponsors/drsamonline) |
-| Ko-fi | [ko-fi.com/matneo](https://ko-fi.com/matneo) |
-| PayPal | [paypal.me/drsohilmomin](https://paypal.me/drsohilmomin?locale.x=en_GB&country.x=IN) |
-| My books | [Amazon author store](https://www.amazon.com/stores/author/B08ZT331LY/allbooks?ccs_id=aed72b9f-71d9-41dc-adee-e9368a317acc) |
-| More apps | [drsamonline.github.io](https://drsamonline.github.io/) |
-| Email | [sohilmomin2000@gmail.com](mailto:sohilmomin2000@gmail.com) |
+| `Optical.Fountain.encode/symbol` | `Frame.Fountain.encode/symbol` |
+| `Optical.Decoder(k, blockSize, session)` | `Frame.Decoder(k, blockSize, transferId)` |
+| `Optical.Sender / Optical.Receiver` | `Frame.Sender / Frame.Receiver` |
+| `Optical.Frame.pack/unpack` | `Frame.pack / Frame.parse` |
+| `Optical.crc32` | `Frame.crc32` |
 
-Nothing is gated behind it: no accounts, no tracking, no network requests.
-
-## Licence
-
-PolyForm Noncommercial 1.0.0. (c) 2026 Dr Sohil Momin.
-
-Part of the Forge system. Kits are open; the orchestrator is licensed.
+This repository stays readable so that anything vendoring it still resolves; the code here is
+frozen at the last version before the merge.
